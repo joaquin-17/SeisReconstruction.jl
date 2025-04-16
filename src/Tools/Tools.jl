@@ -1,16 +1,3 @@
-#export CalculateSampling,
-#Pad5D,
-#IRLS,
-#FFTOp,
-#WeightingOp,
-#ConjugateGradients,
-#LinearOperator,
-#MatrixMultiplyOp,
-#InnerProduct,
-#DotTest,
-#FISTA,
-#power_method,
-#Convmtx
 
 #Include functions and utilities for SeisReconstruction
  
@@ -27,6 +14,7 @@ include("DotTest.jl")
 include("FISTA.jl")
 include("PowerMethod.jl")
 include("Convmtx.jl")
-include("SoftThresholding.jl")
+include("SoftThresholdingFISTA.jl")
+include("SofThresholdingADMM.jl")
 include("ADMM.jl")
 include("CGLS.jl")

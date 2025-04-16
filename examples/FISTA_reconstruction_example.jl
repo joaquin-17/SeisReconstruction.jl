@@ -42,7 +42,13 @@ parameters=  [Dict(:w => S),
 Dict(:patch_size=>patch_size, :Noverlap=>Noverlap, :dims=>dims, :normalize=>true, :padd=>false)];
 operators=[WeightingOp, LocalFFTOp];
 x0 = zeros(ComplexF64,spec_size(dobsn,patch_size,Noverlap));
-m, J = FISTA(x0,dobsn,operators,parameters, μ=μ,Ni=200,tol=tolout);
+
+
+
+#m, J = FISTA(x0,dobsn,operators,parameters, μ=μ,Ni=200,tol=tolout);
+
+
+m,J= IRLS(x0,dobsn,operators,parameters; μ=5.0, ϵ=0.01, Ni=25,Ne=10)
 
 
 

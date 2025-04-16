@@ -1,28 +1,86 @@
-"""
-    IRLS(d,operators,parameters;<keyword arguments>)
 
-Non-quadratic regularization with Iteratively Reweighted Least Squares (IRLS).
 
-# Arguments
-- `Niter_external=3`
-- 'Niter_internal=10'
-- `mu=0`
+function IRLS(m0,dobs,operators,parameters; μ=0.5, ϵ=0.01, Ni=100,Ne=10, tol=1e-4, history=true)
 
-"""
-function IRLS(d,operators,parameters;Niter_external=3,Niter_internal=10,mu=0)
 
-	cost = Float64[]
-	weights = ones(Float64,size(d))
-	parameters[end][:w] = weights
-	m = []
-	for iter_external = 1 : Niter_external
-		v,cost1 = ConjugateGradients(d,operators,parameters,Niter=Niter_internal,mu=mu)
-		append!(cost,cost1)
-		m = v .* weights
-		weights = abs.(m./maximum(abs.(m[:])))
-		parameters[end][:w] = weights
+
+	Jirls= Float64[]
+	Jm_history= Float64[]
+	Jr_history= Float64[]
+
+	weights = ones(Float64,size(m0));
+
+	push!(operators, WeightingOp) #add the weigthing operator to the operator function.
+	weight_param= Dict(:w => weights);
+	push!(parameters,weight_param )
+
+
+
+    if history
+        header = "k         ||y-Ax||²₂              ||x||²₂                   μ                   J"
+        println(""); 
+        println(header);
+      #  @printf("%3.0f %20.10e %20.10e  %20.10e %20.10e\n",0,Jm0, Jr0,μ[begin],J0);
+    end
+
+	m = copy(m0) ;
+	k=0;
+	
+
+
+	
+	while k < Ne
+		
+		k+=1
+		
+		println("iteration $k")
+		#solve ls problem
+		x, Jls=CGLS(m,dobs,operators, parameters; μ=μ, Ni=Ni, tol=tol, history=false)
+		
+		#apply weights
+		m=weights.*x; #
+		
+		#compute new weights and update operators;
+		weights= 1.0 ./( abs.(m).+ ϵ)
+		parameters[end][:w] = weights;
+
+
+		r = dobs - LinearOperator(m, operators, parameters, adj=false) # Update residual
+		Jmk= norm(r)^2; #New misfit
+        Jrk= norm(m)^2; #New model norm
+        Jk = Jmk +μ*Jrk; # New cost function value
+
+        push!(Jirls,Jk); #save objective at each iteration
+		push!(Jm_history, Jmk); #save misfit at each iteration
+        push!(Jr_history, Jrk); #save regularization at each iteration
+
+
+
+        #Tolerance cheking and printing
+
+
+      if history && k <Ni
+            @printf("%3.0f %20.10e %20.10e  %20.10e %20.10e\n", k, Jmk, Jrk, μ, Jk)
+      end        
+
+        if length(Jirls) > 1 && Jirls[end] > eps()
+
+            ΔJ= abs((Jirls[end] - Jirls[end-1]) / Jirls[end])
+
+            if round(ΔJ,digits=8) < tol
+               println("Loop for CGLS stopped at $k iterations.")
+               println("REASON: ")
+               println(" ΔJ = $ΔJ   is < than the established tolerance = $tol used.")
+               break
+            end			
+        end
+
+
+
+
 	end
 
-	return m, cost
+	return m, Jirls
 
 end
+

@@ -30,7 +30,8 @@ module SeisReconstruction
     export MatrixMultiply
     export Pad5D
     export PowerMethod
-    export SoftThresholding
+    export SoftThresholdingFISTA
+    export SoftThresholdingADMM
     export WeightingOp
     export spec_size
     export LocalFFTOp
