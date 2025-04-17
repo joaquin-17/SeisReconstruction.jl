@@ -9,7 +9,6 @@ module SeisReconstruction
     using Statistics;
     using Base.Threads: @threads, nthreads;
     using Distributed;
-   # using SharedArrays
     import SeisProcessing;
     using Random;
     

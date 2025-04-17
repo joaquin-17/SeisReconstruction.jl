@@ -20,7 +20,6 @@ function IRLS(m0,dobs,operators,parameters; μ=0.5, ϵ=0.01, Ni=100,Ne=10, tol=1
         header = "k         ||y-Ax||²₂              ||x||²₂                   μ                   J"
         println(""); 
         println(header);
-      #  @printf("%3.0f %20.10e %20.10e  %20.10e %20.10e\n",0,Jm0, Jr0,μ[begin],J0);
     end
 
 	m = copy(m0) ;
@@ -34,10 +33,8 @@ function IRLS(m0,dobs,operators,parameters; μ=0.5, ϵ=0.01, Ni=100,Ne=10, tol=1
 		k+=1
 		
 		println("iteration $k")
-		#solve ls problem
 		x, Jls=CGLS(m,dobs,operators, parameters; μ=μ, Ni=Ni, tol=tol, history=false)
-		
-		#apply weights
+	
 		m=weights.*x; #
 		
 		#compute new weights and update operators;
@@ -80,7 +77,7 @@ function IRLS(m0,dobs,operators,parameters; μ=0.5, ϵ=0.01, Ni=100,Ne=10, tol=1
 
 	end
 
-	return m, Jirls
+	return m, Jirls, Jls
 
 end
 
